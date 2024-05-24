@@ -1,4 +1,4 @@
-### ssaTranslator
+# ssaTranslator
 
 Basis of ssaParser. An upcoming ssa parsing library for Deno.
 

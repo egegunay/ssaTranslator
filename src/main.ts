@@ -18,7 +18,7 @@ events.split('\n').slice(2).forEach(newline => {
     const stylizedResult = splitAmount(',', newline, ignoredFormatAmount); // This will be used if I want to write some logic for the stylization.
     const standardisedResult = stylizedResult.split(/\{[^}]*\}/g).filter((text) => text.length > 0).join("; ");
     // const newlineNumber = standardisedResult.match(`\\N`)?.length || 0;
-    const cleanedResult = standardisedResult.split('\\N').join(' ')
+    const cleanedResult = standardisedResult.split('\\N').join(' ');
 
-    console.log(cleanedResult)
+    console.log(cleanedResult);
 })

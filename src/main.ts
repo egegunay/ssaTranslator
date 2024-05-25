@@ -1,6 +1,6 @@
-const fileLocation = Deno.env.get('SSA_DIRECTORY');
-if (!fileLocation) throw new Error("No directory specified");
+import { Translator, apiKey, fileLocation, language, TargetLanguageCode } from "../deps.ts";
 
+const translator = new Translator(apiKey);
 const file = await Deno.readTextFile(fileLocation);
 
 const events = file.split('[Events]')[1];
@@ -14,11 +14,14 @@ function splitAmount(seperator: string, str: string, amount: number) { // no reg
     return joined;
 }
 
-events.split('\n').slice(2).forEach(newline => {
+events.split('\n').slice(2).forEach(async newline => {
     const stylizedResult = splitAmount(',', newline, ignoredFormatAmount); // This will be used if I want to write some logic for the stylization.
     const standardisedResult = stylizedResult.split(/\{[^}]*\}/g).filter((text) => text.length > 0).join("; ");
-    // const newlineNumber = standardisedResult.match(`\\N`)?.length || 0;
     const cleanedResult = standardisedResult.split('\\N').join(' ');
 
-    console.log(cleanedResult);
+    const translatedLine = await translator.translateText(cleanedResult, null, language as TargetLanguageCode);
+    // normally you'd add these lines and translate together for added context
+    // however im unsure
+
+    console.log(translatedLine.text);
 })

@@ -23,5 +23,14 @@ events.split('\n').slice(2).forEach(async newline => {
     // normally you'd add these lines and translate together for added context
     // however im unsure
 
-    console.log(translatedLine.text);
+    addNewline(translatedLine.text);
 })
+
+function addNewline(line: string) {
+    // const spaces = line.match(/ /g)?.length || 0;
+
+    const regex = new RegExp(`((?:[^ ]* ){${6}}[^ ]*) `, 'g'); // Again, the 6 will change based on lenght. So this is how I'll keep it.
+    const newline = line.replace(regex, `$1\\N`);
+
+    console.log(newline);
+}

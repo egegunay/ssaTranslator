@@ -10,3 +10,5 @@ And my last step would be some sorta logic for the stylization (like {\pos(x,y)}
 I guess if there is only 1 position/color etc for the entire line, there is no issue. But when there are multiple, if for example source language has a word in red for dramatic effect, I am unsure if I should translate that said word seperate. I want to retain context NO MATTER WHAT.
 
 Context > Style. If we cannot maintain context to add logic for a style element, we won't.
+
+I want to find the newlines using the spaces. There should be around 5-6 spaces, or a length over a certain number, and then we should add a \N.

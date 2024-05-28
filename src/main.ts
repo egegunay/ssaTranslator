@@ -6,31 +6,48 @@ const file = await Deno.readTextFile(fileLocation);
 const events = file.split('[Events]')[1];
 const ignoredFormatAmount = events.split('Text')[0].match(/,/g)?.length || 0;
 
-function splitAmount(seperator: string, str: string, amount: number) { // no regex for you
-    const split = str.split(seperator);
-    const sliced = split.slice(amount); // ignoredFormatAmount
-    const joined = sliced.join(seperator);
-
+function splitAmount(separator: string, str: string, amount: number): string {
+    const split = str.split(separator);
+    const sliced = split.slice(amount);
+    const joined = sliced.join(separator);
     return joined;
 }
 
+function addNewline(text: string, maxLength: number): string {
+    const result = [];
+    let start = 0;
+
+    while (start < text.length) {
+        const limit = start + maxLength;
+        if (limit >= text.length) {
+            result.push(text.slice(start).trim());
+            break;
+        }
+
+        let lastSpaceIndex = text.lastIndexOf(' ', limit);
+        if (lastSpaceIndex === -1 || lastSpaceIndex < start) { // Go beyond limit if no space
+            lastSpaceIndex = text.indexOf(' ', limit) !== -1 ? text.indexOf(' ', limit) : text.length;
+        }
+
+        if (text.length - lastSpaceIndex < 15) { // Don't want last bit of text to be super short. 15 can be changed.
+            result.push(text.slice(start).trim());
+            break;
+        }
+
+        result.push(text.slice(start, lastSpaceIndex).trim());
+        start = lastSpaceIndex + 1;
+    }
+
+    return result.join(String.raw`\N`);
+}
+
 events.split('\n').slice(2).forEach(async newline => {
-    const stylizedResult = splitAmount(',', newline, ignoredFormatAmount); // This will be used if I want to write some logic for the stylization.
+    const stylizedResult = splitAmount(',', newline, ignoredFormatAmount);
     const standardisedResult = stylizedResult.split(/\{[^}]*\}/g).filter((text) => text.length > 0).join("; ");
     const cleanedResult = standardisedResult.split('\\N').join(' ');
 
-    const translatedLine = await translator.translateText(cleanedResult, null, language as TargetLanguageCode);
-    // normally you'd add these lines and translate together for added context
-    // however im unsure
+    const translatedResult = await translator.translateText(cleanedResult, null, language as TargetLanguageCode);
+    const newlinedResult = addNewline(translatedResult.text, 40);
 
-    addNewline(translatedLine.text);
-})
-
-function addNewline(line: string) {
-    // const spaces = line.match(/ /g)?.length || 0;
-
-    const regex = new RegExp(`((?:[^ ]* ){${6}}[^ ]*) `, 'g'); // Again, the 6 will change based on lenght. So this is how I'll keep it.
-    const newline = line.replace(regex, `$1\\N`);
-
-    console.log(newline);
-}
+    console.log(newlinedResult);
+});

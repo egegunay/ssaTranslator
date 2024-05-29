@@ -12,3 +12,9 @@ I guess if there is only 1 position/color etc for the entire line, there is no i
 Context > Style. If we cannot maintain context to add logic for a style element, we won't.
 
 I want to find the newlines using the spaces. There should be around 5-6 spaces, or a length over a certain number, and then we should add a \N.
+
+I hate having to do:
+```js
+events[0].length + 8 + events[1].split('Text')[0].length + 4
+```
+However, the exact text "Text" might exist prior to "[Events]" so I have to find the one after it.

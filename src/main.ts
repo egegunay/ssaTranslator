@@ -3,8 +3,8 @@ import { Translator, apiKey, fileLocation, language, TargetLanguageCode } from "
 const translator = new Translator(apiKey);
 const file = await Deno.readTextFile(fileLocation);
 
-const events = file.split('[Events]')[1];
-const ignoredFormatAmount = events.split('Text')[0].match(/,/g)?.length || 0;
+const events = file.split('[Events]');
+const ignoredFormatAmount = events[1].split('Text')[0].match(/,/g)?.length || 0;
 
 function splitAmount(separator: string, str: string, amount: number): string {
     const split = str.split(separator);
@@ -41,13 +41,21 @@ function addNewline(text: string, maxLength: number): string {
     return result.join(String.raw`\N`);
 }
 
-events.split('\n').slice(2).forEach(async newline => {
+const translatedLines: string[] = [];
+const translation = events[1].split('\n').slice(2).map(async newline => {
     const stylizedResult = splitAmount(',', newline, ignoredFormatAmount);
+    const style = newline.substring(0, newline.length - stylizedResult.length); // could just replace but yeah
     const standardisedResult = stylizedResult.split(/\{[^}]*\}/g).filter((text) => text.length > 0).join("; ");
     const cleanedResult = standardisedResult.split('\\N').join(' ');
 
     const translatedResult = await translator.translateText(cleanedResult, null, language as TargetLanguageCode);
     const newlinedResult = addNewline(translatedResult.text, 40);
 
-    console.log(newlinedResult);
-});
+    translatedLines.push(style + newlinedResult);
+})
+
+await Promise.all(translation);
+const toWrite = '\n' + translatedLines.join('\n'); // TODO: Sigh.
+
+await Deno.truncate(fileLocation, events[0].length + 8 + events[1].split('Text')[0].length + 4); // Scary.
+await Deno.writeTextFile(fileLocation, toWrite, {append: true});
